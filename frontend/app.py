@@ -4,6 +4,8 @@ import pandas as pd
 import requests
 import streamlit as st
 
+st.set_page_config(page_title="Movie Review", layout="wide")
+
 
 def load_api_url():
     url = os.getenv("API_URL")
@@ -18,7 +20,6 @@ def load_api_url():
 API_URL = load_api_url().rstrip("/")
 TIMEOUT = 60
 
-st.set_page_config(page_title="Movie Review", layout="wide")
 st.title("영화 리뷰 서비스")
 
 
