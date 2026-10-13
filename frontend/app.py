@@ -4,26 +4,41 @@ import pandas as pd
 import requests
 import streamlit as st
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8001")
+
+def load_api_url():
+    url = os.getenv("API_URL")
+    if url:
+        return url
+    try:
+        return st.secrets["API_URL"]
+    except Exception:
+        return "http://127.0.0.1:8001"
+
+
+API_URL = load_api_url().rstrip("/")
+TIMEOUT = 60
 
 st.set_page_config(page_title="Movie Review", layout="wide")
 st.title("영화 리뷰 서비스")
 
 
 def api_get(path):
-    res = requests.get(f"{API_URL}{path}", timeout=10)
+    res = requests.get(f"{API_URL}{path}", timeout=TIMEOUT)
     res.raise_for_status()
     return res.json()
 
 
 def api_post(path, payload):
-    return requests.post(f"{API_URL}{path}", json=payload, timeout=30)
+    return requests.post(f"{API_URL}{path}", json=payload, timeout=TIMEOUT)
 
 
 try:
-    movies = api_get("/movies")
-except requests.RequestException:
-    st.error("백엔드 서버에 연결할 수 없습니다.")
+    with st.spinner(
+        "서버에 연결하는 중입니다. 첫 접속은 최대 1분 정도 걸릴 수 있습니다."
+    ):
+        movies = api_get("/movies")
+except requests.RequestException as e:
+    st.error(f"백엔드 서버에 연결할 수 없습니다: {e}")
     st.stop()
 
 tab_list, tab_add, tab_review, tab_recent = st.tabs(
